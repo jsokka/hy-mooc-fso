@@ -33,31 +33,34 @@ const Statistics = ({ good, neutral, bad }) => {
   ]
 
   const total = good + neutral + bad
-  const average = total === 0 ? 0 : points.reduce((a, b) => a + b, 0) / total
-  const positivePercentage = total === 0 ? 0 : (good / total) * 100
+  const average = (total === 0 ? 0 : points.reduce((a, b) => a + b, 0) / total).toFixed(1)
+  const positivePercentage = (total === 0 ? 0 : (good / total) * 100).toFixed(1)
 
   if (total === 0) {
     return (
-      <div>No feedback given</div>
+      <div>No feedback given yet</div>
     )
   }
 
   return (
-    <div>
-      <StatisticsLine text="good" value={good} />
-      <StatisticsLine text="neutral" value={neutral} />
-      <StatisticsLine text="bad" value={bad} />
-      <StatisticsLine text="all" value={total} />
-      <StatisticsLine text="average" value={average} />
-      <StatisticsLine text="positive" value={`${positivePercentage} %`} />
-    </div>
+    <table>
+      <tbody>
+        <tr><StatisticsLine text="good" value={good} /></tr>
+        <tr><StatisticsLine text="neutral" value={neutral} /></tr>
+        <tr><StatisticsLine text="bad" value={bad} /></tr>
+        <tr><StatisticsLine text="all" value={total} /></tr>
+        <tr><StatisticsLine text="average" value={average} /></tr>
+        <tr><StatisticsLine text="positive" value={`${positivePercentage} %`} /></tr>
+      </tbody>
+    </table>
   )
 }
 
 const StatisticsLine = ({ text, value }) => (
-  <div>
-    {text} {value}
-  </div>
+  <>
+    <td>{text}</td>
+    <td>{value}</td>
+  </>
 )
 
 export default App
