@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import personsService from './services/persons'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
@@ -11,11 +11,9 @@ const App = () => {
   const [filter, setFilter] = useState('')
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then(response => {
-        setPersons(response.data)
-      })
+    personsService.getAll().then(persons => {
+      setPersons(persons)
+    })
   }, [])
 
   const handleNewNameChange = (e) => {
@@ -30,18 +28,40 @@ const App = () => {
     setFilter(e.target.value)
   }
 
-  const addNewName = (e) => {
+  const addPerson = (e) => {
     e.preventDefault()
+
     if (newName.trim().length === 0) {
       return
     }
-    if (persons.some(p => p.name === newName)) {
-      alert(`${newName} is already added to phonebook`)
-      return
+
+    const existingPerson = persons.find(p => p.name === newName)
+    if (existingPerson) {
+      if (!window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+        return
+      }
+      const updateReq = { ...existingPerson, number: newNumber }
+      personsService.updatePerson(updateReq.id, updateReq).then(updatedPerson => {
+        setPersons(persons.map(p => p.id !== updateReq.id ? p : updatedPerson))
+      })
+    } else {
+      const createReq = { name: newName, number: newNumber }
+      personsService.createPerson(createReq).then(newPerson => {
+        setPersons(persons.concat(newPerson))
+      })
     }
-    setPersons(persons.concat({ name: newName, number: newNumber }))
+
     setNewName('')
     setNewNumber('')
+  }
+
+  const deletePerson = (id) => {
+    if (!window.confirm(`Delete ${persons.find(p => p.id === id).name}`)) {
+      return
+    }
+    personsService.deletePerson(id).then(_ => {
+      setPersons(persons.filter(p => p.id !== id))
+    })
   }
 
   const shownPersons = filter.length > 0
@@ -58,10 +78,10 @@ const App = () => {
         number={newNumber}
         onNameChange={handleNewNameChange}
         onNumberChange={handleNewNumberChange}
-        onSubmit={addNewName}
+        onSubmit={addPerson}
       />
       <h2>Numbers</h2>
-      <Persons persons={shownPersons} />
+      <Persons persons={shownPersons} onDelete={(id) => deletePerson(id)} />
     </div>
   )
 

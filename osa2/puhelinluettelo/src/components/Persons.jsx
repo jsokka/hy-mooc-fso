@@ -1,4 +1,4 @@
-const Persons = ({ persons }) => {
+const Persons = ({ persons, onDelete }) => {
   return (
     <table>
       <thead align="left">
@@ -9,18 +9,24 @@ const Persons = ({ persons }) => {
       </thead>
       <tbody>
         {persons.map(p =>
-          <PersonRow key={p.name} name={p.name} number={p.number} />
+          <PersonRow
+            key={p.id}
+            name={p.name}
+            number={p.number} 
+            onDelete={() => onDelete(p.id)} 
+          />
         )}
       </tbody>
     </table>
   )
 }
 
-const PersonRow = ({ key, name, number }) => {
+const PersonRow = ({ name, number, onDelete }) => {
   return (
-    <tr key={key}>
-      <td >{name}</td>
+    <tr>
+      <td>{name}</td>
       <td>{number}</td>
+      <td><button onClick={onDelete}>delete</button></td>
     </tr>
   )
 }
