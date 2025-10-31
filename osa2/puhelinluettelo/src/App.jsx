@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import personsService from './services/persons'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import Notification from './components/Notification'
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [message, setMessage] = useState(null)
+  const timeoutRef = useRef(null)
 
   useEffect(() => {
     personsService.getAll().then(persons => {
@@ -37,17 +40,19 @@ const App = () => {
 
     const existingPerson = persons.find(p => p.name === newName)
     if (existingPerson) {
-      if (!window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+      if (!window.confirm(`'${newName}' is already added to phonebook, replace the old number with a new one?`)) {
         return
       }
       const updateReq = { ...existingPerson, number: newNumber }
       personsService.updatePerson(updateReq.id, updateReq).then(updatedPerson => {
         setPersons(persons.map(p => p.id !== updateReq.id ? p : updatedPerson))
+        showNotificationMessage(`Successfully updated phone number of '${updateReq.name}'`)
       })
     } else {
       const createReq = { name: newName, number: newNumber }
       personsService.createPerson(createReq).then(newPerson => {
         setPersons(persons.concat(newPerson))
+        showNotificationMessage(`Successfully added '${newName}' to phonebook`)
       })
     }
 
@@ -56,13 +61,34 @@ const App = () => {
   }
 
   const deletePerson = (id) => {
-    if (!window.confirm(`Delete ${persons.find(p => p.id === id).name}`)) {
+    var personToDelete = persons.find(p => p.id === id)
+    if (!window.confirm(`Delete ${personToDelete.name}`)) {
       return
     }
     personsService.deletePerson(id).then(_ => {
       setPersons(persons.filter(p => p.id !== id))
+      showNotificationMessage(`Successfully removed person '${personToDelete.name}' from phonebook`)
     })
   }
+  
+  const showNotificationMessage = (message, clearTimeout = 5000) => {
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current)
+    }
+    setMessage(message)
+    timeoutRef.current = setTimeout(() => {
+      setMessage(null)
+      timeoutRef.current = null
+    }, clearTimeout)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
 
   const shownPersons = filter.length > 0
     ? persons.filter(p => p.name.toLowerCase().indexOf(filter) != -1)
@@ -71,6 +97,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification text={message} />
       <Filter filter={filter} onFilterChange={handleFilterChange} />
       <h2>Add a new</h2>
       <PersonForm
