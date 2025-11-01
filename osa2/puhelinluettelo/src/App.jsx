@@ -68,14 +68,19 @@ const App = () => {
     personsService.deletePerson(id).then(_ => {
       setPersons(persons.filter(p => p.id !== id))
       showNotificationMessage(`Successfully removed person '${personToDelete.name}' from phonebook`)
+    }).catch(err => {
+      showNotificationMessage(`'${personToDelete.name}' has already been removed from phone book`, "error", 10000)
+      personsService.getAll().then(persons => {
+        setPersons(persons)
+      })
     })
   }
-  
-  const showNotificationMessage = (message, clearTimeout = 5000) => {
+
+  const showNotificationMessage = (message, type = "", clearTimeout = 5000) => {
     if (timeoutRef.current) {
       window.clearTimeout(timeoutRef.current)
     }
-    setMessage(message)
+    setMessage({ text: message, type: type })
     timeoutRef.current = setTimeout(() => {
       setMessage(null)
       timeoutRef.current = null
@@ -97,7 +102,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification text={message} />
+      <Notification message={message} />
       <Filter filter={filter} onFilterChange={handleFilterChange} />
       <h2>Add a new</h2>
       <PersonForm

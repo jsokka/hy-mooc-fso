@@ -1,20 +1,20 @@
-const Notification = ({ text }) => {
+const Notification = ({ message }) => {
   const style = {
     border: '2px solid #000',
     borderRadius: 4,
-    backgroundColor: '#45a72aff',
+    backgroundColor: message?.type === 'error' ? '#ffcccc' : '#ccffcc',
     fontSize: '1.2rem',
     padding: 12,
     marginBottom: 16
   }
 
-  if ((text?.length || 0) === 0) {
+  if ((message?.text?.length || 0) === 0) {
     return null
   }
 
   return (
     <div style={style}>
-      {text}
+      {message.text}
     </div>
   )
 }
