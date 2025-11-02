@@ -1,4 +1,1 @@
-# hy-mooc-fso
-
-## Osa 3 (phone book)
 Render: https://hy-mooc-fso.onrender.com/
