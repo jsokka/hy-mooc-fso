@@ -11,7 +11,7 @@ const personSchema = new mongoose.Schema({
     validate: {
       validator: function(val) {
         const parts = val.split('-') // dash as a separator
-        if (parts.length != 2) {
+        if (parts.length !== 2) {
           return false
         }
         const left = parts[0]

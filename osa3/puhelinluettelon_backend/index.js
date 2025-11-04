@@ -25,7 +25,7 @@ morgan.token('body', (req) => {
   }
 })
 
-app.get("/info", (request, response, next) => {
+app.get('/info', (request, response, next) => {
   Person.countDocuments().then((res) => {
     response.send(`
       <div>Phone book has info for ${res} people</div>
@@ -44,9 +44,9 @@ app.post('/api/persons', (request, response, next) => {
     number: (request.body.number || '').trim()
   })
 
-  Person.exists({ "name": new RegExp(`^${person.name}$`, 'i') }).then(id => {
+  Person.exists({ 'name': new RegExp(`^${person.name}$`, 'i') }).then(id => {
     if (id) {
-      return response.status(400).json({ error: "Name must be unique" })
+      return response.status(400).json({ error: 'Name must be unique' })
     }
     return person.save().then(createdPerson => {
       response.status(201).json(createdPerson)
@@ -70,7 +70,7 @@ app.put('/api/persons/:id', (request, response, next) => {
   }
 
   if (person.name.length === 0 || person.number.length === 0) {
-    return response.status(400).json({ error: "Name and Number are required" })
+    return response.status(400).json({ error: 'Name and Number are required' })
   }
 
   Person.findByIdAndUpdate(request.params.id, person, { new: true }).then(updatedPerson => {
