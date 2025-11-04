@@ -47,17 +47,21 @@ const App = () => {
       personsService.updatePerson(updateReq.id, updateReq).then(updatedPerson => {
         setPersons(persons.map(p => p.id !== updateReq.id ? p : updatedPerson))
         showNotificationMessage(`Successfully updated phone number of '${updateReq.name}'`)
+        setNewName('')
+        setNewNumber('')
       })
     } else {
       const createReq = { name: newName, number: newNumber }
       personsService.createPerson(createReq).then(newPerson => {
         setPersons(persons.concat(newPerson))
         showNotificationMessage(`Successfully added '${newName}' to phonebook`)
+        setNewName('')
+        setNewNumber('')
+      }).catch(error => {
+        console.log(error)
+        showNotificationMessage(`Failed to add person! ${error.response.data.error}`, 'error', 10000)
       })
     }
-
-    setNewName('')
-    setNewNumber('')
   }
 
   const deletePerson = (id) => {
