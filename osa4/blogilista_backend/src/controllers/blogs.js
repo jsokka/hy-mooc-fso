@@ -7,17 +7,18 @@ router.get('/', async (request, response) => {
 })
 
 router.post('/', async (request, response) => {
-  if (!request.body.likes) {
-    request.body.likes = 0
+  const blog = {
+    title: request.body.title,
+    author: request.body.author,
+    url: request.body.url,
+    likes: Math.max(request.body.likes || 0, 0)
   }
 
-  if (!request.body.title || !request.body.url) {
-    return response.status(400).json({ error: 'title and url are required' })
+  if (!blog.title || !blog.url || !blog.author) {
+    return response.status(400).json({ error: 'title, url and author are required' })
   }
 
-  const blog = new Blog(request.body)
-
-  var result = await blog.save()
+  var result = await new Blog(blog).save()
   response.status(201).json(result)
 })
 
@@ -30,8 +31,10 @@ router.put('/:id', async (request, response) => {
   const blog = {
     title: request.body.title,
     url: request.body.url,
+    author: request.body.author,
     likes: request.body.likes
   }
+
   const result = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
 
   if (!result) {

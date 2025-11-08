@@ -7,6 +7,7 @@ const initBlogTestDb = async (blogCount) => {
     blogs.push(new Blog({
       title: `Test blog ${i}`,
       url: `https://blogs.com/${i}`,
+      author: `Blog Author ${i % 2}`,
       likes: Math.floor(Math.random() * 1000)
     }))
   }

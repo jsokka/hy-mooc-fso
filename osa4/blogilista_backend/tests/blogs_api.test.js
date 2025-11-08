@@ -43,44 +43,48 @@ describe('POST /api/blogs', async () => {
   })
 
   test('new blog can be added', async () => {
-    const reqBody = {
+    const payload = {
       title: 'New blog',
       url: 'https://blogs.com/new_blog',
+      author: 'blog autor',
       likes: 23
     }
     const response = await api.post('/api/blogs')
-      .send(reqBody)
+      .send(payload)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
     const allBlogs = await api.get('/api/blogs')
-    assert.strictEqual(response.body.title, reqBody.title)
-    assert.strictEqual(response.body.url, reqBody.url)
+    assert.strictEqual(response.body.title, payload.title)
+    assert.strictEqual(response.body.url, payload.url)
+    assert.strictEqual(response.body.author, payload.author)
     assert.strictEqual(allBlogs.body.length, initialBlogCount + 1)
     assert.deepStrictEqual(response.body, allBlogs.body.find(b => b.id === response.body.id))
   })
 
   test('likes field defaults to 0', async () => {
-    const reqBody = {
+    const payload = {
       title: 'New blog',
       url: 'https://blogs.com/new_blog',
+      author: 'Blog author'
     }
     const response = await api.post('/api/blogs')
-      .send(reqBody)
+      .send(payload)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
-    assert.strictEqual(response.body.title, reqBody.title)
-    assert.strictEqual(response.body.url, reqBody.url)
+    assert.strictEqual(response.body.title, payload.title)
+    assert.strictEqual(response.body.url, payload.url)
+    assert.strictEqual(response.body.author, payload.author)
     assert.strictEqual(response.body.likes, 0)
   })
 
   test('missing title field causes 400', async () => {
-    const reqBody = {
+    const payload = {
       url: 'https://blogs.com/new_blog'
     }
     const response = await api.post('/api/blogs')
-      .send(reqBody)
+      .send(payload)
       .expect(400)
       .expect('Content-Type', /application\/json/)
 
@@ -89,11 +93,11 @@ describe('POST /api/blogs', async () => {
   })
 
   test('missing url field causes 400', async () => {
-    const reqBody = {
+    const payload = {
       title: 'New blog'
     }
     const response = await api.post('/api/blogs')
-      .send(reqBody)
+      .send(payload)
       .expect(400)
       .expect('Content-Type', /application\/json/)
 
@@ -133,6 +137,7 @@ describe('PUT /api/blogs/:id', async () => {
     const blogBefore = blogs[0]
     const payload = {
       title: 'updated blog',
+      author: 'updated author',
       url: 'https://blogs.com/updated_blog',
       likes: blogBefore.likes + 19
     }
@@ -150,6 +155,7 @@ describe('PUT /api/blogs/:id', async () => {
     assert.deepStrictEqual(putResponse.body, blogAfter)
     assert.strictEqual(blogAfter.title, payload.title)
     assert.strictEqual(blogAfter.url, payload.url)
+    assert.strictEqual(blogAfter.author, payload.author)
     assert.strictEqual(blogAfter.likes, payload.likes)
   })
 
