@@ -1,0 +1,197 @@
+const supertest = require('supertest')
+const mongoose = require('mongoose')
+const { describe, test, before, after, beforeEach } = require('node:test')
+const assert = require('node:assert')
+const app = require('../src/app')
+const testHelper = require('./test_helper')
+
+const api = supertest(app)
+
+after(async () => {
+  await testHelper.clearBlogTestDb()
+})
+
+describe('GET /api/blogs', async () => {
+  const blogCount = 10
+  before(async () => {
+    await testHelper.initBlogTestDb(blogCount)
+  })
+
+  test('returns correct amount of blogs', async () => {
+    const response = await api.get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+    assert.strictEqual(response.body.length, blogCount)
+  })
+
+  test('returns blogs and every blog has id field not _id', async () => {
+    const response = await api.get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+    assert.ok(response.body.every(blog => blog.id !== undefined && !blog._id))
+  })
+})
+
+describe('POST /api/blogs', async () => {
+  const initialBlogCount = 2
+  beforeEach(async () => {
+    await testHelper.initBlogTestDb(initialBlogCount)
+  })
+
+  after(async () => {
+    await testHelper.clearBlogTestDb()
+  })
+
+  test('new blog can be added', async () => {
+    const reqBody = {
+      title: 'New blog',
+      url: 'https://blogs.com/new_blog',
+      likes: 23
+    }
+    const response = await api.post('/api/blogs')
+      .send(reqBody)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const allBlogs = await api.get('/api/blogs')
+    assert.strictEqual(response.body.title, reqBody.title)
+    assert.strictEqual(response.body.url, reqBody.url)
+    assert.strictEqual(allBlogs.body.length, initialBlogCount + 1)
+    assert.deepStrictEqual(response.body, allBlogs.body.find(b => b.id === response.body.id))
+  })
+
+  test('likes field defaults to 0', async () => {
+    const reqBody = {
+      title: 'New blog',
+      url: 'https://blogs.com/new_blog',
+    }
+    const response = await api.post('/api/blogs')
+      .send(reqBody)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(response.body.title, reqBody.title)
+    assert.strictEqual(response.body.url, reqBody.url)
+    assert.strictEqual(response.body.likes, 0)
+  })
+
+  test('missing title field causes 400', async () => {
+    const reqBody = {
+      url: 'https://blogs.com/new_blog'
+    }
+    const response = await api.post('/api/blogs')
+      .send(reqBody)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert.ok(response.body.error.includes('title'),
+      'error message should contain missing field (title)')
+  })
+
+  test('missing url field causes 400', async () => {
+    const reqBody = {
+      title: 'New blog'
+    }
+    const response = await api.post('/api/blogs')
+      .send(reqBody)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert.ok(response.body.error.includes('url'),
+      'error message should contain missing field (url)')
+  })
+})
+
+describe('DELETE /api/blogs/:id', async () => {
+  let blogs
+  beforeEach(async () => {
+    blogs = await testHelper.initBlogTestDb(1)
+  })
+
+  test('deletes blog by id', async () => {
+    const id = blogs[0].id
+    await api.delete(`/api/blogs/${id}`).expect(204)
+
+    const response = await api.get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+    assert.equal(response.body.length, 0)
+  })
+})
+
+describe('PUT /api/blogs/:id', async () => {
+  let blogs
+  beforeEach(async () => {
+    blogs = await testHelper.initBlogTestDb(1)
+  })
+
+  after(async () => {
+    await testHelper.clearBlogTestDb()
+  })
+
+  test('all fields are updated', async () => {
+    const blogBefore = blogs[0]
+    const payload = {
+      title: 'updated blog',
+      url: 'https://blogs.com/updated_blog',
+      likes: blogBefore.likes + 19
+    }
+
+    const putResponse = await api.put(`/api/blogs/${blogBefore.id}`)
+      .send(payload)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const getAllResponse = await api.get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const blogAfter = getAllResponse.body[0]
+    assert.deepStrictEqual(putResponse.body, blogAfter)
+    assert.strictEqual(blogAfter.title, payload.title)
+    assert.strictEqual(blogAfter.url, payload.url)
+    assert.strictEqual(blogAfter.likes, payload.likes)
+  })
+
+  test('only likes field is updated', async () => {
+    const blogBefore = blogs[0]
+    const payload = {
+      likes: blogBefore.likes + 24
+    }
+
+    const putResponse = await api.put(`/api/blogs/${blogBefore.id}`)
+      .send(payload)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const getAllResponse = await api.get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const blogAfter = getAllResponse.body[0]
+    assert.deepStrictEqual(putResponse.body, blogAfter)
+    assert.strictEqual(blogAfter.title, blogBefore.title)
+    assert.strictEqual(blogAfter.url, blogBefore.url)
+    assert.strictEqual(blogAfter.likes, payload.likes)
+  })
+
+  test.only('upadting non-existing blog returns 404', async () => {
+    const blogBefore = blogs[0]
+    const payload = {
+      likes: blogBefore.likes + 12
+    }
+    // replace last char to ensure non-existing id
+    const id = blogBefore.id
+    const nonExistingId = id.substring(0, id.length - 1) +
+      (id[id.length - 1] !== 'a' ? 'a' : 'b')
+
+    await api.put(`/api/blogs/${nonExistingId}`)
+      .send(payload)
+      .expect(404)
+  })
+})
+
+after(async () => {
+  await testHelper.clearBlogTestDb()
+  await mongoose.connection.close()
+})
