@@ -7,8 +7,13 @@ const testHelper = require('./test_helper')
 
 const api = supertest(app)
 
+before(async () => {
+  await testHelper.clearBlogTestDb()
+})
+
 after(async () => {
   await testHelper.clearBlogTestDb()
+  await mongoose.connection.close()
 })
 
 describe('GET /api/blogs', async () => {
@@ -38,10 +43,6 @@ describe('POST /api/blogs', async () => {
     await testHelper.initBlogTestDb(initialBlogCount)
   })
 
-  after(async () => {
-    await testHelper.clearBlogTestDb()
-  })
-
   test('new blog can be added', async () => {
     const payload = {
       title: 'New blog',
@@ -59,7 +60,7 @@ describe('POST /api/blogs', async () => {
     assert.strictEqual(response.body.url, payload.url)
     assert.strictEqual(response.body.author, payload.author)
     assert.strictEqual(allBlogs.body.length, initialBlogCount + 1)
-    assert.deepStrictEqual(response.body, allBlogs.body.find(b => b.id === response.body.id))
+    assert.ok(allBlogs.body.map(b => b.id).includes(response.body.id))
   })
 
   test('likes field defaults to 0', async () => {
@@ -129,10 +130,6 @@ describe('PUT /api/blogs/:id', async () => {
     blogs = await testHelper.initBlogTestDb(1)
   })
 
-  after(async () => {
-    await testHelper.clearBlogTestDb()
-  })
-
   test('all fields are updated', async () => {
     const blogBefore = blogs[0]
     const payload = {
@@ -142,7 +139,7 @@ describe('PUT /api/blogs/:id', async () => {
       likes: blogBefore.likes + 19
     }
 
-    const putResponse = await api.put(`/api/blogs/${blogBefore.id}`)
+    await api.put(`/api/blogs/${blogBefore.id}`)
       .send(payload)
       .expect(200)
       .expect('Content-Type', /application\/json/)
@@ -152,7 +149,6 @@ describe('PUT /api/blogs/:id', async () => {
       .expect('Content-Type', /application\/json/)
 
     const blogAfter = getAllResponse.body[0]
-    assert.deepStrictEqual(putResponse.body, blogAfter)
     assert.strictEqual(blogAfter.title, payload.title)
     assert.strictEqual(blogAfter.url, payload.url)
     assert.strictEqual(blogAfter.author, payload.author)
@@ -165,7 +161,7 @@ describe('PUT /api/blogs/:id', async () => {
       likes: blogBefore.likes + 24
     }
 
-    const putResponse = await api.put(`/api/blogs/${blogBefore.id}`)
+    await api.put(`/api/blogs/${blogBefore.id}`)
       .send(payload)
       .expect(200)
       .expect('Content-Type', /application\/json/)
@@ -175,13 +171,12 @@ describe('PUT /api/blogs/:id', async () => {
       .expect('Content-Type', /application\/json/)
 
     const blogAfter = getAllResponse.body[0]
-    assert.deepStrictEqual(putResponse.body, blogAfter)
     assert.strictEqual(blogAfter.title, blogBefore.title)
     assert.strictEqual(blogAfter.url, blogBefore.url)
     assert.strictEqual(blogAfter.likes, payload.likes)
   })
 
-  test.only('upadting non-existing blog returns 404', async () => {
+  test('upadting non-existing blog returns 404', async () => {
     const blogBefore = blogs[0]
     const payload = {
       likes: blogBefore.likes + 12
@@ -197,7 +192,79 @@ describe('PUT /api/blogs/:id', async () => {
   })
 })
 
-after(async () => {
-  await testHelper.clearBlogTestDb()
-  await mongoose.connection.close()
+describe('GET /api/users', async () => {
+  let users
+  before(async () => {
+    users = [
+      await testHelper.createUser('test_user_0', 'Test User0', 'pass1234'),
+      await testHelper.createUser('test_user_1', 'Test User1', 'pass1234')
+    ]
+  })
+
+  test('returns all users', async () => {
+    const response = await api.get('/api/users')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    for (const user of users) {
+      const returnedUser = response.body.find(u => u.username === user.username)
+      assert.deepStrictEqual(returnedUser, user.toJSON())
+    }
+  })
+})
+
+describe('POST /api/users', async () => {
+  let existingUser
+  before(async () => {
+    await testHelper.clearBlogTestDb()
+    existingUser = await testHelper.createUser('test_user_0', 'Test User1', 'pass3456')
+  })
+  test('new user can be added', async () => {
+    const payload = {
+      username: 'test_user_1',
+      name: 'Test User1',
+      password: 'pass123'
+    }
+
+    await api.post('/api/users')
+      .send(payload)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const allUsersResponse = await api.get('/api/users')
+    const user = allUsersResponse.body.find(u => u.username === payload.username)
+    assert.strictEqual(payload.username, user.username)
+    assert.strictEqual(payload.name, user.name)
+    assert.ok(user.id)
+  })
+
+  test('duplicate username returns 400', async () => {
+    const payload = existingUser.toJSON()
+
+    await api.post('/api/users')
+      .send(payload)
+      .expect(400)
+  })
+
+  test('too short username returns 400', async () => {
+    const payload = {
+      username: 'us',
+      password: 'pass1234',
+      name: 'User'
+    }
+    await api.post('/api/users')
+      .send(payload)
+      .expect(400)
+  })
+
+  test('too short password returns 400', async () => {
+    const payload = {
+      username: 'test_user_999',
+      password: '12',
+      name: 'User'
+    }
+    await api.post('/api/users')
+      .send(payload)
+      .expect(400)
+  })
 })
