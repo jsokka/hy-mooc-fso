@@ -7,10 +7,6 @@ const testHelper = require('./test_helper')
 
 const api = supertest(app)
 
-before(async () => {
-  await testHelper.clearBlogTestDb()
-})
-
 after(async () => {
   await testHelper.clearBlogTestDb()
   await mongoose.connection.close()
@@ -39,8 +35,10 @@ describe('GET /api/blogs', async () => {
 
 describe('POST /api/blogs', async () => {
   const initialBlogCount = 2
+  let token
   beforeEach(async () => {
     await testHelper.initBlogTestDb(initialBlogCount)
+    token = await testHelper.loginTestUser()
   })
 
   test('new blog can be added', async () => {
@@ -52,6 +50,7 @@ describe('POST /api/blogs', async () => {
     }
     const response = await api.post('/api/blogs')
       .send(payload)
+      .set('Authorization', `Bearer ${token}`)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
@@ -63,6 +62,18 @@ describe('POST /api/blogs', async () => {
     assert.ok(allBlogs.body.map(b => b.id).includes(response.body.id))
   })
 
+  test('new blog cannot be added unauthorized', async () => {
+    const payload = {
+      title: 'New blog',
+      url: 'https://blogs.com/new_blog',
+      author: 'blog autor',
+      likes: 23
+    }
+    await api.post('/api/blogs')
+      .send(payload)
+      .expect(401)
+  })
+
   test('likes field defaults to 0', async () => {
     const payload = {
       title: 'New blog',
@@ -71,6 +82,7 @@ describe('POST /api/blogs', async () => {
     }
     const response = await api.post('/api/blogs')
       .send(payload)
+      .set('Authorization', `Bearer ${token}`)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
@@ -86,6 +98,7 @@ describe('POST /api/blogs', async () => {
     }
     const response = await api.post('/api/blogs')
       .send(payload)
+      .set('Authorization', `Bearer ${token}`)
       .expect(400)
       .expect('Content-Type', /application\/json/)
 
@@ -99,6 +112,7 @@ describe('POST /api/blogs', async () => {
     }
     const response = await api.post('/api/blogs')
       .send(payload)
+      .set('Authorization', `Bearer ${token}`)
       .expect(400)
       .expect('Content-Type', /application\/json/)
 
@@ -114,13 +128,42 @@ describe('DELETE /api/blogs/:id', async () => {
   })
 
   test('deletes blog by id', async () => {
+    const token = await testHelper.loginTestUser()
     const id = blogs[0].id
-    await api.delete(`/api/blogs/${id}`).expect(204)
+    await api.delete(`/api/blogs/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204)
 
     const response = await api.get('/api/blogs')
       .expect(200)
       .expect('Content-Type', /application\/json/)
     assert.equal(response.body.length, 0)
+  })
+
+  test('attempt to delete non-existing blog returns 403', async () => {
+    // replace last char to ensure non-existing but valid id
+    const id = blogs[0].id
+    const nonExistingId = id.substring(0, id.length - 1) +
+      (id[id.length - 1] !== 'a' ? 'a' : 'b')
+
+    await api.delete(`/api/blogs/${nonExistingId}`)
+      .expect(401)
+  })
+
+  test('attempt to delete a blog unauhtorized returns 401', async () => {
+    const id = blogs[0].id
+    await api.delete(`/api/blogs/${id}`)
+      .expect(401)
+  })
+
+  test('attempt to delete a blog from different user returns 403', async () => {
+    const testUser2 = await testHelper.createUser('test_user2', 'Test User2', 'pass1234')
+    const token = await testHelper.loginTestUser(testUser2.username, 'pass1234')
+
+    const id = blogs[0].id
+    await api.delete(`/api/blogs/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(403)
   })
 })
 
@@ -176,12 +219,12 @@ describe('PUT /api/blogs/:id', async () => {
     assert.strictEqual(blogAfter.likes, payload.likes)
   })
 
-  test('upadting non-existing blog returns 404', async () => {
+  test('updating non-existing blog returns 404', async () => {
     const blogBefore = blogs[0]
     const payload = {
       likes: blogBefore.likes + 12
     }
-    // replace last char to ensure non-existing id
+    // replace last char to ensure non-existing but valid id
     const id = blogBefore.id
     const nonExistingId = id.substring(0, id.length - 1) +
       (id[id.length - 1] !== 'a' ? 'a' : 'b')
@@ -266,5 +309,40 @@ describe('POST /api/users', async () => {
     await api.post('/api/users')
       .send(payload)
       .expect(400)
+  })
+})
+
+describe('POST /api/login', async () => {
+  before(async () => {
+    await testHelper.createUser('test_user', 'Test User', 'password1234')
+  })
+
+  test('login with correct user name and password works', async () => {
+    const payload = {
+      username: 'test_user',
+      password: 'password1234'
+    }
+
+    const response = await api.post('/api/login')
+      .send(payload)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const { token, username, name } = response.body
+
+    assert.strictEqual(username, payload.username)
+    assert.strictEqual(name, 'Test User')
+    assert.ok(token)
+  })
+
+  test('login with incorrect passowrd causes 401', async () => {
+    const payload = {
+      username: 'test_user',
+      password: 'invalidpassword'
+    }
+
+    await api.post('/api/login')
+      .send(payload)
+      .expect(401)
   })
 })

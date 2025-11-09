@@ -1,20 +1,19 @@
 const router = require('express').Router()
 const Blog = require('./../models/blog')
-const User = require('./../models/user')
+const { userExtractor } = require('../models/middleware')
 
 router.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
   response.json(blogs)
 })
 
-router.post('/', async (request, response) => {
-  const user = (await User.find({}))[0]
-
+router.post('/', userExtractor, async (request, response) => {
+  const user = request.user
   const blog = {
-    title: request.body.title,
-    author: request.body.author,
-    url: request.body.url,
-    likes: Math.max(request.body.likes || 0, 0),
+    title: request.body?.title,
+    author: request.body?.author,
+    url: request.body?.url,
+    likes: Math.max(request.body?.likes || 0, 0),
     user: user._id
   }
 
@@ -28,8 +27,18 @@ router.post('/', async (request, response) => {
   response.status(201).json(result)
 })
 
-router.delete('/:id', async (request, response) => {
-  await Blog.findByIdAndDelete(request.params.id)
+router.delete('/:id', userExtractor, async (request, response) => {
+  const blog = await Blog.findById(request.params.id)
+
+  if (!blog) {
+    return response.status(404).end()
+  }
+
+  if (blog.user.toString() !== request.user._id.toString()) {
+    return response.status(403).json({ error: 'user not authorized to delete the blog' })
+  }
+
+  await blog.deleteOne()
   response.status(204).end()
 })
 

@@ -12,7 +12,7 @@ router.post('/', async (request, response) => {
 
   const user = User({
     username: username,
-    name: request.body.name,
+    name: request.body.name || '',
     passwordHash: await bcrypt.hash(password, 10)
   })
 
