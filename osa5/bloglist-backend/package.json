@@ -1,0 +1,33 @@
+{
+  "name": "blogilista_backend",
+  "version": "1.0.0",
+  "description": "",
+  "license": "MIT",
+  "author": "Jarmo Sokka",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "cross-env NODE_ENV=production node src/index.js",
+    "dev": "cross-env NODE_ENV=development node --watch src/index.js",
+    "test": "cross-env NODE_ENV=test node --test",
+    "lint": "eslint .",
+    "start:test": "cross-env NODE_ENV=test node src/index.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "mongoose": "^8.19.3",
+    "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@stylistic/eslint-plugin": "^5.5.0",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "supertest": "^7.1.4"
+  }
+}
