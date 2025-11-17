@@ -5,6 +5,7 @@ const logger = require('./utils/logger')
 const blogsRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
+const testingRouter = require('./controllers/testing')
 const { errorMiddleware, tokenExtractor } = require('./models/middleware')
 
 const app = express()
@@ -31,6 +32,10 @@ app.use(tokenExtractor)
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
+
+if (config.IS_TEST_ENV) {
+  app.use('/api/testing', testingRouter)
+}
 
 app.use(errorMiddleware)
 
