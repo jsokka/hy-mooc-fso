@@ -5,7 +5,7 @@ const getAll = async () => {
   if (!response.ok) {
     throw Error('Failed to fetch anecdotes')
   }
-  return response.json()
+  return await response.json()
 }
 
 const createNew = async (content) => {
@@ -29,7 +29,7 @@ const updateVotes = async (id, votes) => {
   if (!response.ok) {
     throw new Error('Failed to vote anecdote')
   }
-  return response.json()
+  return await response.json()
 }
 
 export default { getAll, createNew, updateVotes }
