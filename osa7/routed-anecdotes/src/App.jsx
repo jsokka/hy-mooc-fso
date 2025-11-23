@@ -71,6 +71,10 @@ const Notification = ({ message }) => {
   )
 }
 
+const inputField = ({ reset, ...rest }) => {
+  return <input {...rest} />
+}
+
 const CreateNew = (props) => {
   const content = useField('text')
   const author = useField('text')
@@ -92,24 +96,22 @@ const CreateNew = (props) => {
     author.reset()
     info.reset()
   }
-
-  const fieldProps = ({ reset, ...rest }) => rest
-
+  
   return (
     <div>
       <h2>create a new anecdote</h2>
       <form onSubmit={handleSubmit} onReset={handleClear}>
         <div>
           content
-          <input {...fieldProps(content)} />
+          {inputField(content)}
         </div>
         <div>
           author
-          <input {...fieldProps(author)} />
+          {inputField(author)}
         </div>
         <div>
           url for more info
-          <input {...fieldProps(info)} />
+          {inputField(info)}
         </div>
         <button>create</button>
         <button type="reset">clear</button>
