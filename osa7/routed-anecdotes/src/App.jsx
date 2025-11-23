@@ -93,21 +93,23 @@ const CreateNew = (props) => {
     info.reset()
   }
 
+  const fieldProps = ({ reset, ...rest }) => rest
+
   return (
     <div>
       <h2>create a new anecdote</h2>
       <form onSubmit={handleSubmit} onReset={handleClear}>
         <div>
           content
-          <input {...content} />
+          <input {...fieldProps(content)} />
         </div>
         <div>
           author
-          <input {...author} />
+          <input {...fieldProps(author)} />
         </div>
         <div>
           url for more info
-          <input {...info} />
+          <input {...fieldProps(info)} />
         </div>
         <button>create</button>
         <button type="reset">clear</button>
