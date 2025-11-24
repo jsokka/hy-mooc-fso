@@ -48,7 +48,10 @@ const App = () => {
       setUser(user)
     } catch (error) {
       console.error(error)
-      showNotification(`Login failed: ${error?.response?.data?.error || ''}`, 'error')
+      showNotification(
+        `Login failed: ${error?.response?.data?.error || ''}`,
+        'error'
+      )
       throw error
     }
   }
@@ -70,10 +73,12 @@ const App = () => {
       setBlogs(blogs.concat([newBlog]))
       showNotification(`Added a new blog ${blog.title} by ${blog.author} 🎉`)
       createBlogToggleRef.current.toggleVisibility()
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error)
-      showNotification(`Failed to create a blog: ${error?.response?.data?.error || ''}`, 'error')
+      showNotification(
+        `Failed to create a blog: ${error?.response?.data?.error || ''}`,
+        'error'
+      )
       throw error
     }
   }
@@ -85,16 +90,17 @@ const App = () => {
       user: blog.user.id
     }
     await blogService.updateBlog(blog.id, payload)
-    setBlogs(blogs
-      .map(b => b.id === blog.id ? { ...b, likes: b.likes + 1 } : b)
-      .sort((a, b) => b.likes - a.likes)
+    setBlogs(
+      blogs
+        .map((b) => (b.id === blog.id ? { ...b, likes: b.likes + 1 } : b))
+        .sort((a, b) => b.likes - a.likes)
     )
   }
 
   const handleRemove = async (blog) => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
       await blogService.deleteBlog(blog.id)
-      setBlogs(blogs.filter(b => b.id !== blog.id))
+      setBlogs(blogs.filter((b) => b.id !== blog.id))
       showNotification(`Removed blog ${blog.title} by ${blog.author}`)
     }
   }
@@ -117,13 +123,24 @@ const App = () => {
       {user && (
         <>
           <h2>blogs</h2>
-          <p>{user.name || user.username} logged in <button type='button' onClick={handleLogout}>Logout</button></p>
-          <Toggleable buttonLabel='Create new blog' ref={createBlogToggleRef}>
+          <p>
+            {user.name || user.username} logged in{' '}
+            <button type="button" onClick={handleLogout}>
+              Logout
+            </button>
+          </p>
+          <Toggleable buttonLabel="Create new blog" ref={createBlogToggleRef}>
             <CreateBlogForm onSubmit={handleCreateBlog} />
           </Toggleable>
-          {blogs.map(blog =>
-            <Blog key={blog.id} blog={blog} currentUser={user} onLike={handleLike} onRemove={handleRemove} />
-          )}
+          {blogs.map((blog) => (
+            <Blog
+              key={blog.id}
+              blog={blog}
+              currentUser={user}
+              onLike={handleLike}
+              onRemove={handleRemove}
+            />
+          ))}
         </>
       )}
     </div>

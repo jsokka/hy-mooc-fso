@@ -21,12 +21,16 @@ const Blog = ({ blog, currentUser, onLike, onRemove }) => {
 
   return (
     <div style={boxStyle}>
-      {blog.title} {blog.author} <button onClick={() => setShowAll(!showAll)}>{showAll ? 'hide' : 'view'}</button>
+      {blog.title} {blog.author}{' '}
+      <button onClick={() => setShowAll(!showAll)}>
+        {showAll ? 'hide' : 'view'}
+      </button>
       {showAll && (
         <>
           <div>{blog.url}</div>
           <div>
-            likes {blog.likes} <button onClick={() => onLike(blog)}>like</button>
+            likes {blog.likes}{' '}
+            <button onClick={() => onLike(blog)}>like</button>
           </div>
           <div>{getDisplayName(blog.user)}</div>
           {currentUser && currentUser.username === blog.user.username && (

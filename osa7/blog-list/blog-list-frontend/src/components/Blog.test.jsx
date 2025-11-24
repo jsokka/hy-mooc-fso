@@ -39,13 +39,15 @@ describe('<Blog />', () => {
     assertBasicInfo()
     const urlEl = screen.getByText(testBlog.url)
     expect(urlEl).toBeDefined()
-    const likesEl = screen.getByText(`likes ${testBlog.likes}`, { exact: false })
+    const likesEl = screen.getByText(`likes ${testBlog.likes}`, {
+      exact: false
+    })
     expect(likesEl).toBeDefined()
     const userEl = screen.getByText(testBlog.user.name)
     expect(userEl).toBeDefined()
   })
 
-  test('onLike event called when like button clicked', async() => {
+  test('onLike event called when like button clicked', async () => {
     const user = userEvent.setup()
     const mockOnLike = vi.fn()
 

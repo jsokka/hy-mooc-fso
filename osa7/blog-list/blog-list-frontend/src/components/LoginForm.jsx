@@ -11,8 +11,9 @@ const LoginForm = ({ onLogin }) => {
       await onLogin({ username, password })
       setUsername('')
       setPassword('')
+    } catch {
+      /* Handled by parent */
     }
-    catch { /* Handled by parent */ }
   }
 
   return (
@@ -21,16 +22,29 @@ const LoginForm = ({ onLogin }) => {
       <div>
         <label>
           Username:
-          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
         </label>
       </div>
       <div>
         <label>
           Password:
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </label>
       </div>
-      <button disabled={username.length === 0 || password.length === 0} type="submit">Login</button>
+      <button
+        disabled={username.length === 0 || password.length === 0}
+        type="submit"
+      >
+        Login
+      </button>
     </form>
   )
 }

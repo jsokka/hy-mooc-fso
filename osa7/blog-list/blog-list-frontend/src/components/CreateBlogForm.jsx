@@ -17,8 +17,9 @@ const CreateBlogForm = ({ onSubmit }) => {
         url: state.url
       })
       setState(emptyState)
+    } catch {
+      /** Handled already by parent component. **/
     }
-    catch { /** Handled already by parent component. **/ }
   }
 
   const handleFieldChange = (e) => {
@@ -32,17 +33,35 @@ const CreateBlogForm = ({ onSubmit }) => {
     <form onSubmit={handleSubmit}>
       <div>
         <label>
-          Title: <input type="text" name="title" value={state.title} onChange={handleFieldChange} />
+          Title:{' '}
+          <input
+            type="text"
+            name="title"
+            value={state.title}
+            onChange={handleFieldChange}
+          />
         </label>
       </div>
       <div>
         <label>
-          Author: <input type="text" name="author" value={state.author} onChange={handleFieldChange} />
+          Author:{' '}
+          <input
+            type="text"
+            name="author"
+            value={state.author}
+            onChange={handleFieldChange}
+          />
         </label>
       </div>
       <div>
         <label>
-          URL: <input type="text" name="url" value={state.url} onChange={handleFieldChange} />
+          URL:{' '}
+          <input
+            type="text"
+            name="url"
+            value={state.url}
+            onChange={handleFieldChange}
+          />
         </label>
       </div>
       <button type="submit">Create</button>
