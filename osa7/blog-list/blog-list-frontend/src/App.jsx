@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useDispatch } from 'react-redux'
 import Blog from './components/Blog'
 import LoginForm from './components/LoginForm'
 import CreateBlogForm from './components/CreateBlogForm'
@@ -6,12 +7,12 @@ import Notification from './components/Notification'
 import Toggleable from './components/Toggleable'
 import blogService from './services/blogs'
 import loginService from './services/login'
+import { showNotification } from './reducers/notificationReducer'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
-  const [notification, setNotification] = useState()
-  const timeoutRef = useRef()
+  const dispatch = useDispatch()
   const createBlogToggleRef = useRef()
 
   useEffect(() => {
@@ -33,14 +34,6 @@ const App = () => {
     blogService.setToken(user?.token)
   }, [user])
 
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [])
-
   const handleLogin = async ({ username, password }) => {
     try {
       const user = await loginService.login({ username, password })
@@ -48,9 +41,11 @@ const App = () => {
       setUser(user)
     } catch (error) {
       console.error(error)
-      showNotification(
-        `Login failed: ${error?.response?.data?.error || ''}`,
-        'error'
+      dispatch(
+        showNotification(
+          `Login failed: ${error?.response?.data?.error || ''}`,
+          'error'
+        )
       )
       throw error
     }
@@ -71,13 +66,17 @@ const App = () => {
         name: user.name
       }
       setBlogs(blogs.concat([newBlog]))
-      showNotification(`Added a new blog ${blog.title} by ${blog.author} 🎉`)
+      dispatch(
+        showNotification(`Added a new blog ${blog.title} by ${blog.author} 🎉`)
+      )
       createBlogToggleRef.current.toggleVisibility()
     } catch (error) {
       console.error(error)
-      showNotification(
-        `Failed to create a blog: ${error?.response?.data?.error || ''}`,
-        'error'
+      dispatch(
+        showNotification(
+          `Failed to create a blog: ${error?.response?.data?.error || ''}`,
+          'error'
+        )
       )
       throw error
     }
@@ -101,24 +100,13 @@ const App = () => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
       await blogService.deleteBlog(blog.id)
       setBlogs(blogs.filter((b) => b.id !== blog.id))
-      showNotification(`Removed blog ${blog.title} by ${blog.author}`)
+      dispatch(showNotification(`Removed blog ${blog.title} by ${blog.author}`))
     }
-  }
-
-  const showNotification = (message, type = '', clearTimeout = 5000) => {
-    if (timeoutRef.current) {
-      window.clearTimeout(timeoutRef.current)
-    }
-    setNotification({ message, type })
-    timeoutRef.current = setTimeout(() => {
-      setNotification(null)
-      timeoutRef.current = null
-    }, clearTimeout)
   }
 
   return (
     <div>
-      {notification && <Notification notification={notification} />}
+      <Notification />
       {!user && <LoginForm onLogin={handleLogin} />}
       {user && (
         <>
