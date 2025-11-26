@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useImperativeHandle } from 'react'
 
-const CreateBlogForm = ({ onSubmit }) => {
+const CreateBlogForm = ({ onSubmit, ref }) => {
   const emptyState = {
     title: '',
     author: '',
@@ -8,18 +8,21 @@ const CreateBlogForm = ({ onSubmit }) => {
   }
   const [state, setState] = useState(emptyState)
 
-  const handleSubmit = async (e) => {
+  useImperativeHandle(ref, () => {
+    return { resetForm }
+  })
+
+  const resetForm = () => {
+    setState(emptyState)
+  }
+
+  const handleSubmit = (e) => {
     e.preventDefault()
-    try {
-      await onSubmit({
-        title: state.title,
-        author: state.author,
-        url: state.url
-      })
-      setState(emptyState)
-    } catch {
-      /** Handled already by parent component. **/
-    }
+    onSubmit({
+      title: state.title,
+      author: state.author,
+      url: state.url
+    })
   }
 
   const handleFieldChange = (e) => {
