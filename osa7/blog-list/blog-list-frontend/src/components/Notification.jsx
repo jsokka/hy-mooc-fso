@@ -12,11 +12,11 @@ const Notification = () => {
     marginBottom: 16
   }
 
-  if ((notification?.length || 0) === 0) {
+  if ((notification?.message?.length || 0) === 0) {
     return null
   }
 
-  return <div style={style}>{notification}</div>
+  return <div style={style}>{notification.message}</div>
 }
 
 export default Notification
