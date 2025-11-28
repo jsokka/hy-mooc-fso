@@ -27,6 +27,8 @@ export const likeBlog = (blog) => {
       user: blog.user.id
     }
     const updatedBlog = await blogService.updateBlog(blog.id, payload)
+    // Restore user
+    updatedBlog.user = blog.user
     dispatch(
       blogsSlice.actions.setBlogs(
         getState().blogs.map((b) => (b.id === blog.id ? updatedBlog : b))
@@ -61,7 +63,7 @@ export const createBlog = (blog, currentUser, onSuccess) => {
   }
 }
 
-export const deleteBlog = (blog) => {
+export const deleteBlog = (blog, onSuccess) => {
   return async (dispatch, getState) => {
     try {
       if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
@@ -74,8 +76,10 @@ export const deleteBlog = (blog) => {
         dispatch(
           showNotification(`Removed blog ${blog.title} by ${blog.author}`)
         )
+        onSuccess()
       }
     } catch (error) {
+      console.error(error)
       dispatch(
         showNotification(
           `Failed to remove blog: ${error?.response?.data?.error}`,
