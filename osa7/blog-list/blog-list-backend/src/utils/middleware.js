@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
-const logger = require('./../utils/logger')
-const User = require('./../models/user')
+const logger = require('./logger')
+const User = require('../models/user')
 
 const errorMiddleware = (error, request, response, next) => {
   logger.error(error)

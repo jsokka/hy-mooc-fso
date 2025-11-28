@@ -6,7 +6,7 @@ const blogsRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const testingRouter = require('./controllers/testing')
-const { errorMiddleware, tokenExtractor } = require('./models/middleware')
+const { errorMiddleware, tokenExtractor } = require('./utils/middleware')
 
 const app = express()
 

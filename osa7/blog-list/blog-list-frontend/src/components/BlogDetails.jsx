@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router'
-import { deleteBlog, likeBlog } from '../reducers/blogReducer'
+import { deleteBlog, likeBlog, addComment } from '../reducers/blogReducer'
 
 const BlogDetails = () => {
   const id = useParams().id
@@ -8,6 +9,7 @@ const BlogDetails = () => {
   const blog = useSelector((state) => state.blogs.find((b) => b.id === id))
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const [newComment, setNewComment] = useState('')
 
   if (!blog) {
     return null
@@ -21,6 +23,15 @@ const BlogDetails = () => {
       })
     )
 
+  const handleAddComment = (e) => {
+    e.preventDefault()
+    dispatch(
+      addComment(blog.id, newComment, () => {
+        setNewComment('')
+      })
+    )
+  }
+
   const getDisplayName = () => {
     if (!blog.user) {
       return 'unknown user'
@@ -30,6 +41,10 @@ const BlogDetails = () => {
     }
     return blog.user.username
   }
+
+  const comments = [...(blog.comments || [])].sort(
+    (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+  )
 
   return (
     <div>
@@ -49,6 +64,23 @@ const BlogDetails = () => {
       {currentUser && currentUser.username === blog.user.username && (
         <button onClick={handleDeleteBlog}>delete</button>
       )}
+      <h3>comments</h3>
+      <form onSubmit={handleAddComment}>
+        <input
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+        />
+        <input type="submit" />
+      </form>
+      <ul>
+        {comments.map((c) => (
+          <li key={c.id}>
+            {c.comment}
+            <br />
+            <small>{new Date(c.timestamp).toLocaleString()}</small>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

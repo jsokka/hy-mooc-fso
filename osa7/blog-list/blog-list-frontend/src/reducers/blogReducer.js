@@ -7,7 +7,15 @@ const blogsSlice = createSlice({
   initialState: [],
   reducers: {
     setBlogs(_state, action) {
-      return (action.payload || []).sort((a, b) => b.likes - a.likes)
+      return [...(action.payload || [])].sort((a, b) => b.likes - a.likes)
+    },
+    addBlogComment(state, action) {
+      const { blogId, comment } = action.payload
+      return state.map((blog) =>
+        blog.id === blogId
+          ? { ...blog, comments: [...(blog.comments || []), comment] }
+          : blog
+      )
     }
   }
 })
@@ -27,8 +35,6 @@ export const likeBlog = (blog) => {
       user: blog.user.id
     }
     const updatedBlog = await blogService.updateBlog(blog.id, payload)
-    // Restore user
-    updatedBlog.user = blog.user
     dispatch(
       blogsSlice.actions.setBlogs(
         getState().blogs.map((b) => (b.id === blog.id ? updatedBlog : b))
@@ -83,6 +89,26 @@ export const deleteBlog = (blog, onSuccess) => {
       dispatch(
         showNotification(
           `Failed to remove blog: ${error?.response?.data?.error}`,
+          'error'
+        )
+      )
+    }
+  }
+}
+
+export const addComment = (blogId, comment, onSuccess) => {
+  return async (dispatch) => {
+    try {
+      const addedComment = await blogService.addComment(blogId, comment)
+      dispatch(
+        blogsSlice.actions.addBlogComment({ blogId, comment: addedComment })
+      )
+      onSuccess()
+    } catch (error) {
+      console.error(error)
+      dispatch(
+        showNotification(
+          `Failed to add comment: ${error?.response?.data?.error}`,
           'error'
         )
       )
