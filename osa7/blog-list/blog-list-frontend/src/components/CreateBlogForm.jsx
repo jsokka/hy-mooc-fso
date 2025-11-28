@@ -1,6 +1,14 @@
-import { useState, useImperativeHandle } from 'react'
+import React, { useState, useImperativeHandle, forwardRef } from 'react'
+import {
+  TextField,
+  Button,
+  Container,
+  Box,
+  Typography,
+  Stack
+} from '@mui/material'
 
-const CreateBlogForm = ({ onSubmit, ref }) => {
+const CreateBlogForm = forwardRef(({ onSubmit }, ref) => {
   const emptyState = {
     title: '',
     author: '',
@@ -8,13 +16,11 @@ const CreateBlogForm = ({ onSubmit, ref }) => {
   }
   const [state, setState] = useState(emptyState)
 
-  useImperativeHandle(ref, () => {
-    return { resetForm }
-  })
-
   const resetForm = () => {
     setState(emptyState)
   }
+
+  useImperativeHandle(ref, () => ({ resetForm }))
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -33,43 +39,53 @@ const CreateBlogForm = ({ onSubmit, ref }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>
-          Title:{' '}
-          <input
+    <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center' }}>
+      <form onSubmit={handleSubmit}>
+        <Stack spacing={2}>
+          <Typography variant="h6" component="h2" align="center">
+            Create New Blog
+          </Typography>
+          <TextField
+            label="Title"
+            size="small"
             type="text"
             name="title"
             value={state.title}
             onChange={handleFieldChange}
+            fullWidth
           />
-        </label>
-      </div>
-      <div>
-        <label>
-          Author:{' '}
-          <input
+          <TextField
+            label="Author"
+            size="small"
             type="text"
             name="author"
             value={state.author}
             onChange={handleFieldChange}
+            fullWidth
           />
-        </label>
-      </div>
-      <div>
-        <label>
-          URL:{' '}
-          <input
+          <TextField
+            label="URL"
+            size="small"
             type="text"
             name="url"
             value={state.url}
             onChange={handleFieldChange}
+            fullWidth
           />
-        </label>
-      </div>
-      <button type="submit">Create</button>
-    </form>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+            <Button
+              size="small"
+              type="submit"
+              variant="contained"
+              color="primary"
+            >
+              Create
+            </Button>
+          </Box>
+        </Stack>
+      </form>
+    </Container>
   )
-}
+})
 
 export default CreateBlogForm

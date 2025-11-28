@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router'
-import { deleteBlog, likeBlog, addComment } from '../reducers/blogReducer'
+import { addComment, deleteBlog, likeBlog } from '../reducers/blogReducer'
 
 const BlogDetails = () => {
   const id = useParams().id

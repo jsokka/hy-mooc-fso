@@ -1,18 +1,28 @@
 import { Link } from 'react-router'
+import { IconButton, ListItem, ListItemText } from '@mui/material'
+import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 
 const Blog = ({ blog }) => {
-  const boxStyle = {
-    border: '1px solid #ccc',
-    padding: 4,
-    margin: 4
-  }
-
   return (
-    <div style={boxStyle}>
-      <Link to={`/blogs/${blog.id}`}>
-        {blog.title} {blog.author}
-      </Link>
-    </div>
+    <ListItem divider>
+      <ListItemText
+        primary={
+          <Link
+            to={`/blogs/${blog.id}`}
+            style={{
+              lineHeight: '2em',
+              textDecoration: 'none',
+              color: 'inherit'
+            }}
+          >
+            {blog.title} {blog.author}
+            <IconButton size="small" style={{ float: 'right' }}>
+              <NavigateNextIcon />
+            </IconButton>
+          </Link>
+        }
+      ></ListItemText>
+    </ListItem>
   )
 }
 

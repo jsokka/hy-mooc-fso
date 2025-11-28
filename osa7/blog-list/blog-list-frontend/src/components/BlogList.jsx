@@ -1,13 +1,10 @@
 import { useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  createBlog,
-  deleteBlog,
-  likeBlog
-} from './../reducers/blogReducer'
+import { createBlog, deleteBlog, likeBlog } from './../reducers/blogReducer'
 import Blog from './Blog'
 import Toggleable from './Toggleable'
 import CreateBlogForm from './CreateBlogForm'
+import { List } from '@mui/material'
 
 const BlogList = ({ currentUser }) => {
   const dispatch = useDispatch()
@@ -31,15 +28,17 @@ const BlogList = ({ currentUser }) => {
       <Toggleable buttonLabel="Create new blog" ref={createBlogToggleRef}>
         <CreateBlogForm onSubmit={handleCreateBlog} ref={createBlogFormRef} />
       </Toggleable>
-      {blogs.map((blog) => (
-        <Blog
-          key={blog.id}
-          blog={blog}
-          currentUser={currentUser}
-          onLike={handleLikeBlog}
-          onRemove={handleRemoveBlog}
-        />
-      ))}
+      <List>
+        {blogs.map((blog) => (
+          <Blog
+            key={blog.id}
+            blog={blog}
+            currentUser={currentUser}
+            onLike={handleLikeBlog}
+            onRemove={handleRemoveBlog}
+          />
+        ))}
+      </List>
     </>
   )
 }

@@ -1,50 +1,46 @@
 import { useState } from 'react'
+import { TextField, Button, Stack } from '@mui/material'
 
 const LoginForm = ({ onLogin }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-
-    try {
-      await onLogin({ username, password })
-      setUsername('')
-      setPassword('')
-    } catch {
-      /* Handled by parent */
-    }
+    onLogin({ username, password })
+    setUsername('')
+    setPassword('')
   }
 
   return (
     <form onSubmit={(e) => handleSubmit(e)}>
-      <h2>Log in to application</h2>
-      <div>
-        <label>
-          Username:
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          Password:
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
-      </div>
-      <button
-        disabled={username.length === 0 || password.length === 0}
-        type="submit"
-      >
-        Login
-      </button>
+      <Stack spacing={2} width={300} justifySelf="center">
+        <h2 style={{ textAlign: 'center' }}>Log in to Blog application</h2>
+        <TextField
+          size="small"
+          label="Username"
+          variant="outlined"
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <TextField
+          size="small"
+          label="Password"
+          variant="outlined"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <Button
+          color="primary"
+          variant="contained"
+          disabled={username.length === 0 || password.length === 0}
+          type="submit"
+        >
+          Login
+        </Button>
+      </Stack>
     </form>
   )
 }
