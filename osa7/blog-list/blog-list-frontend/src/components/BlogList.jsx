@@ -4,7 +4,7 @@ import { createBlog, deleteBlog, likeBlog } from './../reducers/blogReducer'
 import Blog from './Blog'
 import Toggleable from './Toggleable'
 import CreateBlogForm from './CreateBlogForm'
-import { List } from '@mui/material'
+import { List, Typography } from '@mui/material'
 
 const BlogList = ({ currentUser }) => {
   const dispatch = useDispatch()
@@ -28,6 +28,9 @@ const BlogList = ({ currentUser }) => {
       <Toggleable buttonLabel="Create new blog" ref={createBlogToggleRef}>
         <CreateBlogForm onSubmit={handleCreateBlog} ref={createBlogFormRef} />
       </Toggleable>
+      <Typography variant='h5'>
+        All blogs
+      </Typography>
       <List>
         {blogs.map((blog) => (
           <Blog

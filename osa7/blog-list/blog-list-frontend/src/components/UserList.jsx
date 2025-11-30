@@ -1,3 +1,11 @@
+import Paper from '@mui/material/Paper'
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableContainer from '@mui/material/TableContainer'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
+import Typography from '@mui/material/Typography'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router'
 
@@ -6,31 +14,34 @@ const UserList = () => {
 
   return (
     <div>
-      <h2>Users</h2>
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            <th>
-              <b>blogs created</b>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => {
-            return (
-              <tr key={user.id}>
-                <td>
+      <Typography variant="h5" component="h2" gutterBottom>
+        Users
+      </Typography>
+
+      <TableContainer component={Paper} sx={{ maxWidth: 800 }}>
+        <Table aria-label="users table">
+          <TableHead>
+            <TableRow>
+              <TableCell />
+              <TableCell>
+                <b>Blogs created</b>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user.id} hover>
+                <TableCell component="th" scope="row">
                   <Link to={`/users/${user.id}`}>
                     {user.name || user.username}
                   </Link>
-                </td>
-                <td>{user.blogCount}</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+                </TableCell>
+                <TableCell>{user.blogCount}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   )
 }

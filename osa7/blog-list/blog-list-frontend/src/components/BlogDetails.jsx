@@ -1,7 +1,19 @@
-import { useState } from 'react'
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
+import {
+  Box,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Stack,
+  Tooltip,
+  Typography
+} from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router'
 import { addComment, deleteBlog, likeBlog } from '../reducers/blogReducer'
+import BlogCommentInput from './BlogCommentInput'
+import { useRef } from 'react'
 
 const BlogDetails = () => {
   const id = useParams().id
@@ -9,7 +21,7 @@ const BlogDetails = () => {
   const blog = useSelector((state) => state.blogs.find((b) => b.id === id))
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const [newComment, setNewComment] = useState('')
+  const commentInputRef = useRef()
 
   if (!blog) {
     return null
@@ -23,11 +35,10 @@ const BlogDetails = () => {
       })
     )
 
-  const handleAddComment = (e) => {
-    e.preventDefault()
+  const handleAddComment = (newComment) => {
     dispatch(
       addComment(blog.id, newComment, () => {
-        setNewComment('')
+        commentInputRef.current.clear()
       })
     )
   }
@@ -48,39 +59,64 @@ const BlogDetails = () => {
 
   return (
     <div>
-      <h1>
-        {blog.title} by {blog.author}
-      </h1>
-      <div>
-        <a href={blog.url} target="_blank">
-          {blog.url}
-        </a>
-      </div>
-      <div>
-        {blog.likes} likes
-        <button onClick={handleLikeBlog}>like</button>
-      </div>
-      <div>added by {getDisplayName()}</div>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="flex-start"
+        sx={{ mb: 1 }}
+      >
+        <Box display="flex" flexDirection="column" gap={0}>
+          <Typography variant="h4">{blog.title}</Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0 }}>
+            by {blog.author}
+          </Typography>
+        </Box>
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="flex-end"
+          gap={1}
+        >
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="h5">{blog.likes}</Typography>
+            <Tooltip title="Like blog">
+              <IconButton size="small" onClick={handleLikeBlog} sx={{ p: 1 }}>
+                <FavoriteBorderIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+      </Box>
+      <Box display="flex" justifySelf="center">
+        <Stack>
+          <a href={blog.url} target="_blank" rel="noreferrer">
+            <Typography>{blog.url}</Typography>
+          </a>
+          <Typography
+            variant="body2"
+            sx={{ textAlign: 'center', color: 'text.secondary' }}
+          >
+            added by {getDisplayName()}
+          </Typography>
+        </Stack>
+      </Box>
       {currentUser && currentUser.username === blog.user.username && (
         <button onClick={handleDeleteBlog}>delete</button>
       )}
-      <h3>comments</h3>
-      <form onSubmit={handleAddComment}>
-        <input
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-        />
-        <input type="submit" />
-      </form>
-      <ul>
+      <Typography variant="h6" mb={2}>
+        Comments
+      </Typography>
+      <BlogCommentInput onSubmit={handleAddComment} ref={commentInputRef} />
+      <List dense={true}>
         {comments.map((c) => (
-          <li key={c.id}>
-            {c.comment}
-            <br />
-            <small>{new Date(c.timestamp).toLocaleString()}</small>
-          </li>
+          <ListItem key={c.id} divider={true}>
+            <ListItemText
+              primary={c.comment}
+              secondary={new Date(c.timestamp).toLocaleString()}
+            />
+          </ListItem>
         ))}
-      </ul>
+      </List>
     </div>
   )
 }

@@ -1,5 +1,7 @@
+import { List, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router'
+import Blog from './Blog'
 
 const UserDetails = () => {
   const id = useParams().id
@@ -11,14 +13,16 @@ const UserDetails = () => {
 
   return (
     <div>
-      {user.name || user.username}
-      <h3>added blogs</h3>
+      <Typography variant="h4" mb={2}>
+        {user.name || user.username}
+      </Typography>
+      <Typography variant="h6">Blogs added by the user</Typography>
       {user.blogs.length === 0 && <div>No blogs added yet</div>}
-      <ul>
+      <List>
         {user.blogs.map((blog) => (
-          <li key={blog.id}>{blog.title}</li>
+          <Blog blog={blog} />
         ))}
-      </ul>
+      </List>
     </div>
   )
 }

@@ -58,8 +58,12 @@ const App = () => {
 
   return (
     <Container maxWidth="md">
-      <Notification />
-      {!user && <LoginForm onLogin={handleLogin} />}
+      {!user && (
+        <>
+          <Notification />
+          <LoginForm onLogin={handleLogin} />
+        </>
+      )}
       {user && (
         <>
           <AppBar position="static">
@@ -155,6 +159,7 @@ const App = () => {
           </AppBar>
 
           <Container maxWidth="md" sx={{ py: 3, flex: 1, px: 2 }}>
+            <Notification />
             <Routes>
               <Route path="/" element={<BlogList currentUser={user} />} />
               <Route path="/blogs/:id" element={<BlogDetails />} />
